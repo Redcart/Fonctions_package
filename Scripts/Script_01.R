@@ -1,7 +1,7 @@
 ###################################################################################################################################################
 #######                                                                                                                                      ######
-#######                                          Fonctions utiles (création de package ?)                                                    ######
-#######                                                  S.CORDE Décembre 2018                                                               ######
+#######                                             Fonctions utiles (création de package ?)                                                 ######
+#######                                                     S.CORDE Décembre 2018                                                            ######
 #######                                                                                                                                      ######
 ###################################################################################################################################################
 
@@ -120,7 +120,7 @@ lift_effect <- function(predictions, true_labels, positive_label){
       coord_cartesian(ylim = c(0.05, 0.8)) +
       ggtitle("Courbe de l'effet Lift") +
       xlab("Effectif Cumulé") +
-      ylab("% True positive Label") + 
+      ylab("% True Positive Label") + 
       theme_bw() +
       theme(plot.title = element_text(hjust = 0.5)) 
     
@@ -144,9 +144,9 @@ lift_curve <- function(predictions, true_labels, positive_label)
   step <- floor(n/100)
   points <- seq(0, n, step+1)
     
-    lift_2 <- c()
-    truth_lift <- c()
-    nb_positifs <- sum(data_1$true_labels == positive_label)
+  lift_2 <- c()
+  truth_lift <- c()
+  nb_positifs <- sum(data_1$true_labels == positive_label)
     
     
     for (i in 1:100){
