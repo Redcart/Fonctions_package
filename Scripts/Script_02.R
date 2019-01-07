@@ -8,7 +8,7 @@
 
 ### Idées de fonctions
 
-# -	Procédure permettant d'obtenir des clusters respectant une certaine volumétrie via kmeans
+# -	Procédure permettant d'obtenir des clusters respectant une certaine volumétrie via l'algorithme kmeans
 
 rm(list = ls())
 
@@ -17,15 +17,9 @@ rm(list = ls())
 library(ggplot2)
 library(dplyr)
 
-##########################
-###  Procédure Kmeans  ###
-##########################
-
-data()
-
-
-data <- trees
-str(data)
+###########################################
+###  Fonction pour la procédure Kmeans  ###
+###########################################
 
 kmeans_procedure <- function(data, columns, threshold_min, threshold_max, verbose = FALSE){
   
@@ -128,24 +122,22 @@ kmeans_procedure <- function(data, columns, threshold_min, threshold_max, verbos
       
     }
     
-    else{
+    else{# test pour savoir si nous avons oublié un cas
       
       print("Attention un autre cas non pris en compte existe !")
+      
     }
     
     test <- sum(is.na(liste_temp$cluster)) == 0     
     
     if (verbose  == TRUE){
       
-    print(table(liste_clusterise$cluster))
+      print(table(liste_clusterise$cluster))
       
     }
     
-  
-    
   }
 
-  
   results <- list()
   results$clusters <- liste_clusterise$cluster
   results$frequencies <- table(liste_clusterise$cluster)
@@ -154,6 +146,14 @@ kmeans_procedure <- function(data, columns, threshold_min, threshold_max, verbos
   
 }
 
+##################################################
+###  Exemple de fonctionnement de la fonction  ###
+##################################################
 
-final <- kmeans_procedure(data, 1:3, 3, 5)
+data()
+
+data <- trees
+str(data)
+
+final <- kmeans_procedure(data = data, columns = 1:3, threshold_min = 3, threshold_max = 5)
 final
