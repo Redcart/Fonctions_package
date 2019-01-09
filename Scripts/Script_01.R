@@ -12,6 +12,7 @@
 # -	Fonction qui crée la formule automatiquement sur les colonnes d’un dataframe
 # -	Fonction qui recrée la proc freq de SAS
 # -	Fonction pour la courbe de lift (arguments en input : probabilités prédites et true labels)
+# - Fonction pour calculer la variance intraclasse pour une CAH (à la manière d'un kmeans)
 
 rm(list = ls())
 
@@ -173,4 +174,45 @@ lift_curve <- function(predictions, true_labels, positive_label)
   
 }
 
+
+###############################################
+###  Calcul de la variance intraclasse CAH  ###
+###############################################
+
+data <- mtcars
+str(data)
+# Fonction qui permet de calculer le centroïde des clusters sur un data frame 
+
+clust.centroid <- function(i, data, cluster) {
+  
+  colMeans(data[cluster == i,])# on obtient les coordonnées pour chaque variable des centroïdes de chaque cluster
+  
+}
+
+variance_interclasse_ahc <- c()
+
+model_ahc <- hclust(d = dist(data), method = "ward.D")
+
+max_clusters <- 10
+
+# Etape 1: Trouver les centroïdes des différents clusters et le centroïde global
+# Etape 2: Calculer les écarts quadratiques des centroïdes au centroïde global
+# Etape 3: Faire la moyenne des écarts quadratiques en prenant en compte le nombre total de clusters
+
+for (i in 2: max_clusters){
+  
+  
+  ahc_clusters <- cutree(tree = model_ahc, k = i)
+  
+  centroids <- sapply(unique(ahc_clusters), clust.centroid, data, ahc_clusters)
+  
+  centroids <- centroids %>% cbind(rowMeans(centroids))
+  
+  squares <- (centroids[, -dim(centroids)[2]] - centroids[, dim(centroids)[2]])^2
+  
+  variance_interclasse_ahc <- c(variance_interclasse_ahc, sum(apply(squares, 2, sum))/i)
+  
+}
+
+variance_interclasse_ahc
 
