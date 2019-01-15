@@ -10,59 +10,21 @@
 
 # - Procédure pour combler les gaps des séries temporelles au sein d'un panel (avec répétition pour les débuts et fins)
 
+  # - fonction à créer pour faire un calendrier vide ###########
+  # - fonction pour réaliser la répétition en début et fin de série temporelle
+  # - fonction pour combler les gaps intermédiaire d'une série temporelle
+
 rm(list = ls())
 
 ### Chargement de packages
 
 library(ggplot2)
-rm(list = ls())
-
-#install.packages("ineq")
-#install.packages("sqldf")
-
-### Chargement des librairies
-library(data.table)
 library(dplyr)
-library(ggplot2)
-library(stringr)
 library(sqldf)
-
-
-##############################
-### Chargement des données ###
-##############################
-
-donnees_ca <- fread("Output/donnees_ca_corrigees.csv")
-# ==> Données hebdomadaires par gamme 
-
-budget <- read.csv2("Data/budget_fdj_ALL_YEARS.csv")
-budget$SommeBudget <- as.numeric(as.character(budget$SommeBudget))
-
-
-perimetre_1 <- fread("Output/liste_pdv_gamme_constante.csv")
-str(perimetre_1)
-
-perimetre_2 <- fread("Output/liste_pdv_gamme_significative.csv")
-str(perimetre_2)
-
-# on exclut les PDV de P2 qui sont déja présents dans P1
-perimetre_2 <- perimetre_2 %>% 
-  anti_join(perimetre_1, by = c("Code PDV" = "Code PDV"))
-
-perimetre_2 %>% select(`Code PDV`) %>% distinct() %>% count
-
 
 ##########################################################
 ### Corrections des gap au sein des séries temporelles ###
 ##########################################################
-
-### Méthode interpolation linéaire
-
-
-###################
-### Perimètre 1 ###
-###################
-
 
 # Créer un calendrier complet
 
@@ -196,13 +158,14 @@ jeu_donnees <- data.frame("country" = rep(c("France", "Spain", "Germany"), each 
 jeu_donnees <- na.omit(jeu_donnees)
 
 annees <- data.frame("year" = 2009:2018)
-ids <- jeu_donnees %>%  select(country) %>% distinct()
+ids <- jeu_donnees %>%  
+  select(country) %>%
+  distinct()
 
 calendrier <-  sqldf("SELECT * 
                      FROM ids
                      CROSS JOIN annees")
 
 data_to_check_1 <- end_start_to_fill(data = jeu_donnees, calendar = calendrier, gap_variable = "value", key_variable = "country", time_variable = "year", digits = 2)
-
 
 data_to_check_2 <- gap_to_fill(data = data_to_check_1, gap_variable = "gap_variable_corrected", key_variable = "country", time_variable = "year", digits = 1)
