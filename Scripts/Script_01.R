@@ -216,3 +216,6 @@ for (i in 2: max_clusters){
 
 variance_interclasse_ahc
 
+
+
+# il doit avoir quelque chose à faire par rapport aux poids (= effectif des différents clusters)
