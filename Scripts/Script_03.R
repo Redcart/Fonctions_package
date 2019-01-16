@@ -8,9 +8,9 @@
 
 ### Idées de fonctions
 
-# - Procédure pour combler les gaps des séries temporelles au sein d'un panel (avec répétition pour les débuts et fins)
+# - Procédure pour combler les gaps des séries temporelles au sein d'un panel
 
-  # - fonction à créer pour faire un calendrier vide ###########
+  # - fonction à créer pour faire un calendrier vide
   # - fonction pour réaliser la répétition en début et fin de série temporelle
   # - fonction pour combler les gaps intermédiaire d'une série temporelle
 
@@ -21,42 +21,41 @@ rm(list = ls())
 library(ggplot2)
 library(dplyr)
 library(sqldf)
+library(stringr)
 
-##########################################################
-### Corrections des gap au sein des séries temporelles ###
-##########################################################
+###################################################
+###  Fonction pour créer un calendrier complet  ###
+###################################################
 
-# Créer un calendrier complet
+# arguments:
+# - data: R data frame
+# - key_variable: variable faisant référence à la clé de l'observation (ID, ...)
+# - time_variable: variable temporelle permettant d'ordonner les observations
+# - start_year: année de début de la série temporelle
+# - end_year: année de fin de la série temporelle
 
-create_calendar(data ){
+
+create_calendar_day <- function(data, key_variable, time_variable, start_year, end_year){
   
-  # à créer
+   #, scale_time
+  
+  ids <- data %>% 
+    select(key_variable) %>% 
+    distinct()
+  
+  years <- data.frame(start_year:end_year)
+
+  calendar <- sqldf("SELECT * 
+                     FROM ids
+                     CROSS JOIN years")
+  
+  colnames(calendar) <- c(key_variable, time_variable)
+  
+  return(calendar)
   
 }
 
-annees <- 2014:2017
-semaines <- str_pad(1:52, 2, pad = "0")
 
-calendrier <- annees %>% CJ(semaines) 
-colnames(calendrier) = c("annee", "semaine")
-calendrier$id_semaine <- paste0(calendrier$annee, "W", calendrier$semaine, sep = "")
-calendrier <- data.frame(calendrier)
-str(calendrier)
-
-
-calendrier %>% select(annee) %>% distinct() %>% count
-calendrier %>% select(id_semaine) %>% distinct() %>% count
-
-# 2ème étape: faire un cross join entre les pdv et le calendrier 2014-2017
-
-calendrier_pdv_gamme_cst <- sqldf("SELECT * 
-                                  FROM perimetre_1
-                                  CROSS JOIN calendrier")
-
-
-calendrier_pdv_gamme_cst %>% select(`Code PDV`) %>% distinct() %>% count
-calendrier_pdv_gamme_cst %>% select(annee) %>% distinct() %>% count
-calendrier_pdv_gamme_cst %>% select(id_semaine) %>% distinct() %>% count
 
 
 #####################################################################
@@ -166,7 +165,6 @@ gap_to_fill <- function(data, gap_variable, key_variable, time_variable, digits 
   
 }
 
-
 ################################
 ####   Tests des fonctions  ####
 ################################
@@ -185,17 +183,35 @@ jeu_donnees <- data.frame("country" = rep(c("France", "Spain", "Germany"), each 
 
 jeu_donnees <- na.omit(jeu_donnees)
 
-annees <- data.frame("year" = 2009:2018)
-ids <- jeu_donnees %>%  
-  select(country) %>%
-  distinct()
-
-calendrier <-  sqldf("SELECT * 
-                     FROM ids
-                     CROSS JOIN annees")
-
 ### vérification
 
-data_to_check_1 <- end_start_to_fill(data = jeu_donnees, calendar = calendrier, gap_variable = "value", key_variable = "country", time_variable = "year", digits = 2)
+data_to_check_1 <- create_calendar_day(data = jeu_donnees, key_variable = "country", time_variable = "year", start_year = 2009, end_year = 2018)
+  
+data_to_check_2 <- end_start_to_fill(data = jeu_donnees, calendar = data_to_check_1, gap_variable = "value", key_variable = "country", time_variable = "year", digits = 2)
 
-data_to_check_2 <- gap_to_fill(data = data_to_check_1, gap_variable = "gap_variable_corrected", key_variable = "country", time_variable = "year", digits = 1)
+data_to_check_3 <- gap_to_fill(data = data_to_check_2, gap_variable = "gap_variable_corrected", key_variable = "country", time_variable = "year", digits = 1)
+
+### OK !!!
+
+
+### Reste
+
+colnames(calendrier) = c("annee", "semaine")
+calendrier$id_semaine <- paste0(calendrier$annee, "W", calendrier$semaine, sep = "")
+calendrier <- data.frame(calendrier)
+str(calendrier)
+
+
+calendrier %>% select(annee) %>% distinct() %>% count
+calendrier %>% select(id_semaine) %>% distinct() %>% count
+
+# 2ème étape: faire un cross join entre les pdv et le calendrier 2014-2017
+
+calendrier_pdv_gamme_cst <- sqldf("SELECT * 
+                                  FROM perimetre_1
+                                  CROSS JOIN calendrier")
+
+
+calendrier_pdv_gamme_cst %>% select(`Code PDV`) %>% distinct() %>% count
+calendrier_pdv_gamme_cst %>% select(annee) %>% distinct() %>% count
+calendrier_pdv_gamme_cst %>% select(id_semaine) %>% distinct() %>% count
