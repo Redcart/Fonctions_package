@@ -30,8 +30,10 @@ library(sqldf)
 
 create_calendar(data ){
   
+  # à créer
   
 }
+
 annees <- 2014:2017
 semaines <- str_pad(1:52, 2, pad = "0")
 
@@ -57,7 +59,17 @@ calendrier_pdv_gamme_cst %>% select(annee) %>% distinct() %>% count
 calendrier_pdv_gamme_cst %>% select(id_semaine) %>% distinct() %>% count
 
 
-# On remplace les débuts et fin de série manquantes par répétition des premières et dernières valeurs renseignées
+#####################################################################
+###  Fonction pour combler les débuts et fin de série manquantes  ###
+#####################################################################
+
+# arguments:
+# - data: R data frame
+# - calendar: calendrier vide par ID
+# - gap_variable: variable dont il faut combler les gap
+# - key_variable: variable faisant référence à la clé de l'observation (ID, ...)
+# - time_variable: variable temporelle permettant d'ordonner les observations
+# - digits: nombre de chiffres après la virgule à garderlors de l'arrondi de la valeur interpolée
 
 end_start_to_fill <- function(data, calendar, gap_variable, key_variable, time_variable, digits = 2){
   
@@ -107,7 +119,16 @@ end_start_to_fill <- function(data, calendar, gap_variable, key_variable, time_v
   
 }
 
-# On identifie les gaps intermédiaires par interpolation linéaire
+####################################################################################
+####    Fonction pour combler les gaps intermdédiaires d'une série temporelle    ###
+####################################################################################
+
+# arguments:
+  # - data: R data frame
+  # - gap_variable: variable dont il faut combler les gap
+  # - key_variable: variable faisant référence à la clé de l'observation (ID, ...)
+  # - time_variable: variable temporelle permettant d'ordonner les observations
+  # - digits: nombre de chiffres après la virgule à garderlors de l'arrondi de la valeur interpolée
 
 gap_to_fill <- function(data, gap_variable, key_variable, time_variable, digits = 2){
   
@@ -145,6 +166,13 @@ gap_to_fill <- function(data, gap_variable, key_variable, time_variable, digits 
   
 }
 
+
+################################
+####   Tests des fonctions  ####
+################################
+
+### création d'un jeu de données test
+
 rep(c("Paris", "Madrid", "Berlin"), each = 10)
 
 jeu_donnees <- data.frame("country" = rep(c("France", "Spain", "Germany"), each = 10),
@@ -165,6 +193,8 @@ ids <- jeu_donnees %>%
 calendrier <-  sqldf("SELECT * 
                      FROM ids
                      CROSS JOIN annees")
+
+### vérification
 
 data_to_check_1 <- end_start_to_fill(data = jeu_donnees, calendar = calendrier, gap_variable = "value", key_variable = "country", time_variable = "year", digits = 2)
 
