@@ -12,7 +12,7 @@
 
   # - fonction à créer pour faire un calendrier vide
   # - fonction pour réaliser la répétition en début et fin de série temporelle
-  # - fonction pour combler les gaps intermédiaire d'une série temporelle
+  # - fonction pour combler les gaps intermédiaires d'une série temporelle
 
 rm(list = ls())
 
@@ -33,7 +33,6 @@ library(stringr)
 # - time_variable: variable temporelle permettant d'ordonner les observations
 # - start_year: année de début de la série temporelle
 # - end_year: année de fin de la série temporelle
-
 
 create_calendar_day <- function(data, key_variable, time_variable, start_year, end_year){
   
@@ -56,8 +55,6 @@ create_calendar_day <- function(data, key_variable, time_variable, start_year, e
 }
 
 
-
-
 #####################################################################
 ###  Fonction pour combler les débuts et fin de série manquantes  ###
 #####################################################################
@@ -71,6 +68,8 @@ create_calendar_day <- function(data, key_variable, time_variable, start_year, e
 # - digits: nombre de chiffres après la virgule à garderlors de l'arrondi de la valeur interpolée
 
 end_start_to_fill <- function(data, calendar, gap_variable, key_variable, time_variable, digits = 2){
+  
+  new_var <- paste(gap_variable, "_corrected_1", sep = "")
   
   start_end <- data %>% 
     arrange(get(key_variable), get(time_variable)) %>% 
@@ -110,10 +109,9 @@ end_start_to_fill <- function(data, calendar, gap_variable, key_variable, time_v
     mutate(values_to_replace = ifelse(boo_end_toreplace == 1 & n_gap == 1, 1, 0)) %>% 
     mutate(gap_variable_corrected = ifelse(values_to_replace == 1, last_gap_variable, gap_variable_corrected)) %>% 
     arrange(get(key_variable), get(time_variable)) %>% 
-    select(key_variable, time_variable, gap_variable, gap_variable_corrected)
-  
-  
-  
+    select(key_variable, time_variable, gap_variable, gap_variable_corrected) %>% 
+    rename(!!new_var:=gap_variable_corrected) 
+
   return(data_1)
   
 }
@@ -130,7 +128,8 @@ end_start_to_fill <- function(data, calendar, gap_variable, key_variable, time_v
   # - digits: nombre de chiffres après la virgule à garderlors de l'arrondi de la valeur interpolée
 
 gap_to_fill <- function(data, gap_variable, key_variable, time_variable, digits = 2){
-  
+
+  new_var <- paste(str_sub(gap_variable, 1, str_length(gap_variable)-1), "2", sep = "")
   
   data <- data %>% 
     arrange(get(key_variable), get(time_variable)) %>% 
@@ -155,19 +154,20 @@ gap_to_fill <- function(data, gap_variable, key_variable, time_variable, digits 
     mutate(gap_variable_before = max(gap_variable_before)) %>% 
     mutate(gap_variable_after = max(gap_variable_after)) %>% 
     ungroup() %>% 
-    mutate(gap_variable_corrected = ifelse(is.na(get(gap_variable)), gap_variable_before + ((gap_variable_after - gap_variable_before)*n_gap_step/(number_gap_step+1)), 
+    mutate(gap_variable_corrected = ifelse(is.na(get(gap_variable)), 
+                                           gap_variable_before + ((gap_variable_after - gap_variable_before)*n_gap_step/(number_gap_step+1)), 
                                            get(gap_variable))) %>%
     mutate(gap_variable_corrected = round(gap_variable_corrected, digits)) %>% 
+    rename(!!new_var:=gap_variable_corrected) %>% 
     ungroup() 
   
   return(data)
   
-  
 }
 
-################################
-####   Tests des fonctions  ####
-################################
+#################################
+####   Tests des fonctions   ####
+#################################
 
 ### création d'un jeu de données test
 
@@ -189,7 +189,7 @@ data_to_check_1 <- create_calendar_day(data = jeu_donnees, key_variable = "count
   
 data_to_check_2 <- end_start_to_fill(data = jeu_donnees, calendar = data_to_check_1, gap_variable = "value", key_variable = "country", time_variable = "year", digits = 2)
 
-data_to_check_3 <- gap_to_fill(data = data_to_check_2, gap_variable = "gap_variable_corrected", key_variable = "country", time_variable = "year", digits = 1)
+data_to_check_3 <- gap_to_fill(data = data_to_check_2, gap_variable = "value_corrected_1", key_variable = "country", time_variable = "year", digits = 1)
 
 ### OK !!!
 
