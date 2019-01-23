@@ -158,8 +158,9 @@ gap_to_fill <- function(data, gap_variable, key_variable, time_variable, digits 
                                            gap_variable_before + ((gap_variable_after - gap_variable_before)*n_gap_step/(number_gap_step+1)), 
                                            get(gap_variable))) %>%
     mutate(gap_variable_corrected = round(gap_variable_corrected, digits)) %>% 
-    rename(!!new_var:=gap_variable_corrected) %>% 
-    ungroup() 
+    ungroup() %>% 
+    select(-boo_gap, -lag_boo_gap, -first_gap, -n_gap, -n_gap_step, -number_gap_step, -gap_variable_before, -gap_variable_after) %>% 
+    rename(!!new_var:=gap_variable_corrected)
   
   return(data)
   
@@ -194,7 +195,9 @@ data_to_check_3 <- gap_to_fill(data = data_to_check_2, gap_variable = "value_cor
 ### OK !!!
 
 
-### Reste (pour la création d'un calendrier plus complexe)
+### RESTE A FAIRE
+# la création d'un calendrier plus complexe
+# gérer le problème de get(key_variable)
 
 colnames(calendrier) = c("annee", "semaine")
 calendrier$id_semaine <- paste0(calendrier$annee, "W", calendrier$semaine, sep = "")

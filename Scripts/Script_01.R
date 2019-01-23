@@ -274,5 +274,5 @@ compute_inertia_ahc <- function(data, max_clusters = 10)
 # compute_inertia_ahc(data = data)
 
 ### RESTE A FAIRE
-# Pourcentage au lieu de n pour l'axe des abscices des courbes lift
+# Pourcentage au lieu de n pour l'axe des abscisses des courbes lift
 # Question de l'évolution de l'inertie qui n'est pas stricte lorsque le nombre de cluster augmente 
