@@ -1,12 +1,12 @@
 ###################################################################################################################################################
 #######                                                                                                                                      ######
-#######                                             Fonctions utiles (création de package ?)                                                 ######
+#######                                                       Fonctions utiles                                                               ######
 #######                                                     S.CORDE Décembre 2018                                                            ######
 #######                                                                                                                                      ######
 ###################################################################################################################################################
 
 
-### Idées de fonctions
+### Fonctions codées dans ce script
 
 # -	Procédure permettant d'obtenir des clusters respectant une certaine volumétrie via l'algorithme kmeans
 

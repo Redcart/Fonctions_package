@@ -6,13 +6,13 @@
 ###################################################################################################################################################
 
 
-### Idées de fonctions
+### Fonctions codées dans ce script
 
 # - Procédure pour combler les gaps des séries temporelles au sein d'un panel
 
-  # - fonction à créer pour faire un calendrier vide
-  # - fonction pour réaliser la répétition en début et fin de série temporelle
-  # - fonction pour combler les gaps intermédiaires d'une série temporelle
+  # - Fonction à créer pour faire un calendrier vide
+  # - Fonction pour réaliser la répétition en début et fin de série temporelle
+  # - Fonction pour combler les gaps intermédiaires d'une série temporelle
 
 rm(list = ls())
 
@@ -28,11 +28,11 @@ library(stringr)
 ###################################################
 
 # arguments:
-# - data: R data frame
-# - key_variable: variable faisant référence à la clé de l'observation (ID, ...)
-# - time_variable: variable temporelle permettant d'ordonner les observations
-# - start_year: année de début de la série temporelle
-# - end_year: année de fin de la série temporelle
+  # - data: data frame
+  # - key_variable: variable faisant référence à la clé de l'observation (ID, ...)
+  # - time_variable: variable temporelle permettant d'ordonner les observations
+  # - start_year: année de début de la série temporelle
+  # - end_year: année de fin de la série temporelle
 
 create_calendar_day <- function(data, key_variable, time_variable, start_year, end_year){
   
@@ -60,12 +60,12 @@ create_calendar_day <- function(data, key_variable, time_variable, start_year, e
 #####################################################################
 
 # arguments:
-# - data: R data frame
-# - calendar: calendrier vide par ID
-# - gap_variable: variable dont il faut combler les gap
-# - key_variable: variable faisant référence à la clé de l'observation (ID, ...)
-# - time_variable: variable temporelle permettant d'ordonner les observations
-# - digits: nombre de chiffres après la virgule à garderlors de l'arrondi de la valeur interpolée
+  # - data: data frame
+  # - calendar: calendrier vide par ID
+  # - gap_variable: variable dont il faut combler les gap
+  # - key_variable: variable faisant référence à la clé de l'observation (ID, ...)
+  # - time_variable: variable temporelle permettant d'ordonner les observations
+  # - digits: nombre de chiffres après la virgule à garderlors de l'arrondi de la valeur interpolée
 
 end_start_to_fill <- function(data, calendar, gap_variable, key_variable, time_variable, digits = 2){
   
@@ -121,7 +121,7 @@ end_start_to_fill <- function(data, calendar, gap_variable, key_variable, time_v
 ####################################################################################
 
 # arguments:
-  # - data: R data frame
+  # - data: data frame
   # - gap_variable: variable dont il faut combler les gap
   # - key_variable: variable faisant référence à la clé de l'observation (ID, ...)
   # - time_variable: variable temporelle permettant d'ordonner les observations
@@ -194,7 +194,7 @@ data_to_check_3 <- gap_to_fill(data = data_to_check_2, gap_variable = "value_cor
 ### OK !!!
 
 
-### Reste
+### Reste (pour la création d'un calendrier plus complexe)
 
 colnames(calendrier) = c("annee", "semaine")
 calendrier$id_semaine <- paste0(calendrier$annee, "W", calendrier$semaine, sep = "")
