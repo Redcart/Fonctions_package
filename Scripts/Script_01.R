@@ -121,7 +121,6 @@ lift_effect <- function(predictions, true_labels, positive_label)
   step <- floor(n/100)
   points <- seq(1, n, step)
   
-  
   lift_1 <- c()
   
   for (i in 1:100)
