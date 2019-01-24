@@ -120,7 +120,8 @@ lift_effect <- function(predictions, true_labels, positive_label)
   n <- length(true_labels)
   step <- floor(n/100)
   points <- seq(1, n, step)
-  
+  quantiles <- quantile(0:n)
+                        
   lift_1 <- c()
   
   for (i in 1:100)
@@ -134,6 +135,7 @@ lift_effect <- function(predictions, true_labels, positive_label)
     geom_line(aes(x = points, y = lift_1), color = "#56B4E9") +
     geom_hline(yintercept = mean(true_labels == positive_label), lty = "dashed", color = "grey") +
     coord_cartesian(ylim = c(0.05, 0.8)) +
+    scale_x_continuous(breaks = as.vector(quantiles), labels = names(quantiles)) +
     ggtitle("Effect Lift Curve") +
     xlab("Cumulative Population") +
     ylab("% True Positive Label") + 
@@ -163,7 +165,8 @@ lift_curve <- function(predictions, true_labels, positive_label)
   lift_2 <- c()
   truth_lift <- c()
   nb_positifs <- sum(data_1$true_labels == positive_label)
-    
+  quantiles <- quantile(0:n)
+  
   for (i in 1:100)
    {
       
@@ -177,6 +180,7 @@ lift_curve <- function(predictions, true_labels, positive_label)
      geom_line(aes(x = points, y = truth_lift)) +
      geom_segment(aes(x = 0, y = 0, xend = n, yend = 1), lty = "dashed", color = "grey") +
      coord_cartesian(ylim = c(0.05, 1)) +
+     scale_x_continuous(breaks = as.vector(quantiles), labels = names(quantiles)) +
      ggtitle("Lift Curve") +
      xlab("Cumulative Population") +
      ylab("Lift") + 
