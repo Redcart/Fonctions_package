@@ -103,7 +103,7 @@ proc_freq <- function(variable, digits = 4)
 
 # arguments:
   # predictions: probabilités prédites par un modèle statistique
-  # true_lables: étiquettes rélle des individus statistiques
+  # true_labels: étiquettes rélles des individus statistiques
   # positive_label: nom de la modalité correspondant au label positif (Y = 1)
 
 lift_effect <- function(predictions, true_labels, positive_label)
@@ -140,7 +140,7 @@ lift_effect <- function(predictions, true_labels, positive_label)
     theme_bw() +
     theme(plot.title = element_text(hjust = 0.5)) 
   
-  plot_1
+  return(plot_1)
     
 }
 
@@ -164,7 +164,6 @@ lift_curve <- function(predictions, true_labels, positive_label)
   truth_lift <- c()
   nb_positifs <- sum(data_1$true_labels == positive_label)
     
-    
   for (i in 1:100)
    {
       
@@ -173,7 +172,6 @@ lift_curve <- function(predictions, true_labels, positive_label)
       
    }
 
-    
   plot_2 <- ggplot() +
      geom_line(aes(x = points, y = lift_2), color = "#56B4E9") +
      geom_line(aes(x = points, y = truth_lift)) +
@@ -185,7 +183,7 @@ lift_curve <- function(predictions, true_labels, positive_label)
      theme_bw() +
      theme(plot.title = element_text(hjust = 0.5)) 
     
-  plot_2
+  return(plot_2)
   
 }
 
