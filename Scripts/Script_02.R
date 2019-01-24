@@ -28,18 +28,17 @@ library(dplyr)
   # threshold_min: seuil minimum
   # threshold_max: seuil max
   # verbose: imprimer dans la console l'état d'avancement de la procédure
+  # seed: graine pour les appels aléatoires
 
-kmeans_procedure <- function(data, columns, threshold_min, threshold_max, verbose = FALSE)
+kmeans_procedure <- function(data, columns, threshold_min, threshold_max, verbose = FALSE, seed = 42)
 {
   
-  set.seed(42)
+  set.seed(seed)
   
   i <- 1
   b <- 1
   k <- 2
   c <- 1
-  
-  test <- FALSE
   
   n_observation <- 1:dim(data)[1]
   cluster <- NA
@@ -47,6 +46,7 @@ kmeans_procedure <- function(data, columns, threshold_min, threshold_max, verbos
   liste_clusterise <- data.frame(n_observation, cluster)
   table(liste_clusterise$cluster)
   
+  test <- FALSE
   ## Tant que tous les clusters ne sont pas calculés
   
   while (test == FALSE)
@@ -66,8 +66,8 @@ kmeans_procedure <- function(data, columns, threshold_min, threshold_max, verbos
         select(n_observation, cluster_bis)
       
     
-      ## On clusterise les PDV qui n'ont pas encore de cluster (= NA)
-      set.seed(42)
+      ## On clusterise les individus qui n'ont pas encore de cluster (= NA)
+      set.seed(seed)
       
       assign(paste("model_kmean_", b, ".", k, sep = ""), 
              kmeans(data[liste_temp$n_observation, columns], centers = k, iter.max = 50, nstart = 5, algorithm = "Lloyd"))
@@ -85,7 +85,7 @@ kmeans_procedure <- function(data, columns, threshold_min, threshold_max, verbos
         for (i in 1:k)
           {
           
-          # On fige également les clusters qui seraient passés au dessous du seuil minimum pluôt que de revenir au kmeans précédent
+          # On fige également les clusters qui seraient passés au dessous du seuil minimum plutôt que de revenir au kmeans précédent
             if (eval(as.name(paste("volumetrie_cluster_", b, ".", k, sep = "")))[i] <= threshold_max) 
              {
             
@@ -119,7 +119,7 @@ kmeans_procedure <- function(data, columns, threshold_min, threshold_max, verbos
       else if (any(eval(as.name(paste("volumetrie_cluster_", b, ".", k, sep = ""))) < threshold_min))
         {
         
-        # On fige le(s) cluster(s) concerné(s)
+        # On fige le(s) cluster(s) concerné(s) en revenant au kmeans précédent
         for (i in 1:(k-1))
           {
             liste_temp$cluster_bis[eval(as.name(paste("model_kmean_", b, ".", k-1, sep = "")))$cluster==i] <- c
@@ -141,7 +141,7 @@ kmeans_procedure <- function(data, columns, threshold_min, threshold_max, verbos
         print("Attention un autre cas non pris en compte existe !")
         
         }
-      
+      # Est-ce qu'il reste des observations à clusteriser ?
       test <- sum(is.na(liste_temp$cluster)) == 0     
       
       if (verbose  == TRUE)
@@ -164,8 +164,6 @@ kmeans_procedure <- function(data, columns, threshold_min, threshold_max, verbos
 ##################################################
 ###  Exemple de fonctionnement de la fonction  ###
 ##################################################
-
-data()
 
 data <- trees
 str(data)

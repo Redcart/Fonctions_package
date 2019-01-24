@@ -194,8 +194,6 @@ lift_curve <- function(predictions, true_labels, positive_label)
 ###  Calcul de la variance intraclasse CAH  ###
 ###############################################
 
-# Fonction qui permet de calculer le centroïde des clusters sur un data frame 
-
 # arguments:
   # i: numéro du cluster
   # data: data frame
@@ -226,12 +224,16 @@ compute_inertia <- function(data)
   
 }
 
-compute_inertia(mtcars)
+#compute_inertia(mtcars)
 
 
 # arguments:
-# data: data frame (uniquement variables numériques)
-# max_clusters: nombre maximal de clusters pour le quel on fait calcule la variance interclasse
+  # data: data frame (uniquement variables numériques)
+  # max_clusters: nombre maximal de clusters pour le quel on fait calcule la variance interclasse
+
+# Etape 1: Trouver les centroïdes des différents clusters et le centroïde global
+# Etape 2: Calculer les écarts quadratiques des centroïdes au centroïde global
+# Etape 3: Faire la moyenne des écarts quadratiques en prenant en compte le nombre total de clusters et la volumétrie par cluster
 
 compute_inertia_ahc <- function(data, max_clusters = 10)
 {
@@ -241,10 +243,6 @@ compute_inertia_ahc <- function(data, max_clusters = 10)
   intergroup_inertia_ahc <- c()
   
   model_ahc <- hclust(d = dist(data), method = "ward.D")
-
-  # Etape 1: Trouver les centroïdes des différents clusters et le centroïde global
-  # Etape 2: Calculer les écarts quadratiques des centroïdes au centroïde global
-  # Etape 3: Faire la moyenne des écarts quadratiques en prenant en compte le nombre total de clusters
 
   for (i in 2: max_clusters)
    {

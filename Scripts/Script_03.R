@@ -1,6 +1,6 @@
 ###################################################################################################################################################
 #######                                                                                                                                      ######
-#######                                             Fonctions utiles (création de package ?)                                                 ######
+#######                                                        Fonctions utiles                                                              ######
 #######                                                     S.CORDE Décembre 2018                                                            ######
 #######                                                                                                                                      ######
 ###################################################################################################################################################
@@ -10,7 +10,7 @@
 
 # - Procédure pour combler les gaps des séries temporelles au sein d'un panel
 
-  # - Fonction à créer pour faire un calendrier vide
+  # - Fonction permettant de créer un calendrier vide
   # - Fonction pour réaliser la répétition en début et fin de série temporelle
   # - Fonction pour combler les gaps intermédiaires d'une série temporelle
 
@@ -65,7 +65,7 @@ create_calendar_day <- function(data, key_variable, time_variable, start_year, e
   # - gap_variable: variable dont il faut combler les gap
   # - key_variable: variable faisant référence à la clé de l'observation (ID, ...)
   # - time_variable: variable temporelle permettant d'ordonner les observations
-  # - digits: nombre de chiffres après la virgule à garderlors de l'arrondi de la valeur interpolée
+  # - digits: nombre de chiffres après la virgule à garder lors de l'arrondi de la valeur interpolée
 
 end_start_to_fill <- function(data, calendar, gap_variable, key_variable, time_variable, digits = 2){
   
@@ -159,7 +159,7 @@ gap_to_fill <- function(data, gap_variable, key_variable, time_variable, digits 
                                            get(gap_variable))) %>%
     mutate(gap_variable_corrected = round(gap_variable_corrected, digits)) %>% 
     ungroup() %>% 
-    select(-boo_gap, -lag_boo_gap, -first_gap, -n_gap, -n_gap_step, -number_gap_step, -gap_variable_before, -gap_variable_after) %>% 
+    select(-boo_gap, -lag_boo_gap, -first_gap, -n_gap, -n_gap_step, -number_gap_step, -gap_variable_before, -gap_variable_after, -`get(key_variable)`) %>% 
     rename(!!new_var:=gap_variable_corrected)
   
   return(data)
@@ -177,7 +177,7 @@ rep(c("Paris", "Madrid", "Berlin"), each = 10)
 jeu_donnees <- data.frame("country" = rep(c("France", "Spain", "Germany"), each = 10),
                           "capital" = rep(c("Paris", "Madrid", "Berlin"), each = 10),
                           "year" = 2009:2018,
-                          "value" = c(NA, NA, 200, 300, 500, 1000, NA, NA, NA, 500, 
+                          "gdp" = c(NA, NA, 200, 300, 500, 1000, NA, NA, NA, 500, 
                                       0, NA, NA, NA, NA, NA, NA, 800, 1200, 1500,
                                       100, 200, 400, 700, 700, 800, 600, 500, NA, NA))
 
@@ -188,9 +188,9 @@ jeu_donnees <- na.omit(jeu_donnees)
 
 data_to_check_1 <- create_calendar_day(data = jeu_donnees, key_variable = "country", time_variable = "year", start_year = 2009, end_year = 2018)
   
-data_to_check_2 <- end_start_to_fill(data = jeu_donnees, calendar = data_to_check_1, gap_variable = "value", key_variable = "country", time_variable = "year", digits = 2)
+data_to_check_2 <- end_start_to_fill(data = jeu_donnees, calendar = data_to_check_1, gap_variable = "gdp", key_variable = "country", time_variable = "year", digits = 2)
 
-data_to_check_3 <- gap_to_fill(data = data_to_check_2, gap_variable = "value_corrected_1", key_variable = "country", time_variable = "year", digits = 1)
+data_to_check_3 <- gap_to_fill(data = data_to_check_2, gap_variable = "gdp_corrected_1", key_variable = "country", time_variable = "year", digits = 1)
 
 ### OK !!!
 
