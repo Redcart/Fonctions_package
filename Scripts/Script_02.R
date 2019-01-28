@@ -1,34 +1,35 @@
 ###################################################################################################################################################
 #######                                                                                                                                      ######
-#######                                                       Fonctions utiles                                                               ######
-#######                                                     S.CORDE Décembre 2018                                                            ######
+#######                                                       Helpful functions                                                              ######
+#######                                                       for data analysis                                                              ######
+#######                                                     S.CORDE December 2018                                                            ######
 #######                                                                                                                                      ######
 ###################################################################################################################################################
 
+### Functions coded in this script
 
-### Fonctions codées dans ce script
-
-# -	Procédure permettant d'obtenir des clusters respectant une certaine volumétrie via l'algorithme kmeans
+# - Procedure that permits to get clusters from Kmeans with some rules on the sizes of the clusters
 
 rm(list = ls())
 
-### Chargement de packages
+### Loading of required R packages
 
 library(ggplot2)
 library(dplyr)
 
 
 ###########################################
-###  Fonction pour la procédure Kmeans  ###
+###  Function for the kmeans procedure  ###
 ###########################################
 
+# This function allows to perform kmeans clustering with some desired output sizes for clusters
 # arguments:
-  # data: data frame
-  # columns: colonnes du data frame sur lesquelles faire le kmeans
-  # threshold_min: seuil minimum
-  # threshold_max: seuil max
-  # verbose: imprimer dans la console l'état d'avancement de la procédure
-  # seed: graine pour les appels aléatoires
+  # data: R data frame
+  # columns: columns of the data frame on which we perform the kmeans algorithm
+  # threshold_min: minimum size for cluster
+  # threshold_max: maximum size fo cluster
+  # verbose: print the current state of the procedure
+  # seed: seed for the random call (if we want the output to be reproducible)
 
 kmeans_procedure <- function(data, columns, threshold_min, threshold_max, verbose = FALSE, seed = 42)
 {
@@ -47,7 +48,7 @@ kmeans_procedure <- function(data, columns, threshold_min, threshold_max, verbos
   table(liste_clusterise$cluster)
   
   test <- FALSE
-  ## Tant que tous les clusters ne sont pas calculés
+  ## While clusters are not all filled
   
   while (test == FALSE)
     {
@@ -66,7 +67,7 @@ kmeans_procedure <- function(data, columns, threshold_min, threshold_max, verbos
         select(n_observation, cluster_bis)
       
     
-      ## On clusterise les individus qui n'ont pas encore de cluster (= NA)
+      ## We perform clustering on observations that do not have one
       set.seed(seed)
       
       assign(paste("model_kmean_", b, ".", k, sep = ""), 
@@ -77,15 +78,15 @@ kmeans_procedure <- function(data, columns, threshold_min, threshold_max, verbos
       
       eval(as.name(paste("volumetrie_cluster_", b, ".", k, sep = "")))
       
-      # Si au moins un des clusters est compris entre le seuil minimum et le seuil maximum
+      # If at least one cluster has size between threshold_min and threshold_max
       if (any(between(eval(as.name(paste("volumetrie_cluster_", b, ".", k, sep = ""))), threshold_min, threshold_max))) 
        {
         
-        # On fige le(s) cluster(s) concerné(s)
+        # We fill the cluster(s) in that case
         for (i in 1:k)
           {
           
-          # On fige également les clusters qui seraient passés au dessous du seuil minimum plutôt que de revenir au kmeans précédent
+          # We also fill clusters whose size would fall below the minimum treshold
             if (eval(as.name(paste("volumetrie_cluster_", b, ".", k, sep = "")))[i] <= threshold_max) 
              {
             
@@ -107,7 +108,7 @@ kmeans_procedure <- function(data, columns, threshold_min, threshold_max, verbos
         
        }          
       
-      # Si tous les clusters sont au dessus du seuil maximum, on continue le clustering
+      # If every size cluster is above the maximum threshold we keep increasing the number of clusters
       else if (all(eval(as.name(paste("volumetrie_cluster_", b, ".", k, sep = ""))) > threshold_max))
         {  
         
@@ -115,11 +116,11 @@ kmeans_procedure <- function(data, columns, threshold_min, threshold_max, verbos
         
         } 
       
-      # Si un cluster est en dessous du seuil minimum (et donc que tous les autres sont au dessus du seuil maximum)
+      # If one cluster has size below the minimum threshold and the other above the maximum threshold 
       else if (any(eval(as.name(paste("volumetrie_cluster_", b, ".", k, sep = ""))) < threshold_min))
         {
         
-        # On fige le(s) cluster(s) concerné(s) en revenant au kmeans précédent
+        # We get back to the previous kmeans and fill the clusters
         for (i in 1:(k-1))
           {
             liste_temp$cluster_bis[eval(as.name(paste("model_kmean_", b, ".", k-1, sep = "")))$cluster==i] <- c
@@ -136,12 +137,12 @@ kmeans_procedure <- function(data, columns, threshold_min, threshold_max, verbos
        }
       
       else
-        {# test pour savoir si nous avons oublié un cas
+        {# Test to be sure to not forget a case
         
-        print("Attention un autre cas non pris en compte existe !")
+        print(" Be careful another case exists !")
         
         }
-      # Est-ce qu'il reste des observations à clusteriser ?
+      # Are all observations clusterized ?
       test <- sum(is.na(liste_temp$cluster)) == 0     
       
       if (verbose  == TRUE)
@@ -161,9 +162,9 @@ kmeans_procedure <- function(data, columns, threshold_min, threshold_max, verbos
   
 }
 
-##################################################
-###  Exemple de fonctionnement de la fonction  ###
-##################################################
+############################################
+###  Performing example of the function  ###
+############################################
 
 data <- trees
 str(data)

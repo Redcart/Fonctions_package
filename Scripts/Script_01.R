@@ -1,32 +1,34 @@
 ###################################################################################################################################################
 #######                                                                                                                                      ######
-#######                                                       Fonctions utiles                                                               ######
-#######                                                     S.CORDE Décembre 2018                                                            ######
+#######                                                       Helpful functions                                                              ######
+#######                                                       for data analysis                                                              ######
+#######                                                     S.CORDE December 2018                                                            ######
 #######                                                                                                                                      ######
 ###################################################################################################################################################
 
 
-### Fonctions codées dans ce script
+### Functions coded in this script
 
-# -	Fonction qui change automatiquement les \ en /
-# -	Fonction qui créé la formule automatiquement sur les colonnes d’un dataframe
-# -	Fonction qui recréé la proc freq de SAS
-# -	Fonction pour la courbe de lift (arguments en input : probabilités prédites et données étiquettées)
-# - Fonction pour calculer la variance intraclasse pour une CAH (à la manière d'un kmeans)
+# -	Function that changes automatically \ into / 
+# -	Function that creates atomatically formula from the columns names of a data frame
+# -	Function that reproduces the SAS proc freq
+# -	Function that creates both lift effect curve and lift curve (for predictive classification models)
+# - Fonction that permits to compute the intragroup variance from agglomerative clustering
 
 rm(list = ls())
 
-### Chargement des packages
+### Loading of required R packages
 
 library(ggplot2)
 library(dplyr)
 
 ###########################################
-###  Changer de path windows ==> linux  ###
+###  Change the path windows ==> linux  ###
 ###########################################
 
+# This function allows to change "\" into "/" from system paths
 # arguments:
-  # input requis dans la console
+  # input : string that is required to be inserted int console
 
 windows_to_linux_path <- function()
 {
@@ -41,13 +43,14 @@ windows_to_linux_path <- function()
 
 #C:\Users\scorde\Desktop\Data_Science
 
-################################################
-###  Créer une formule pour un modèle de ML  ###
-################################################
+######################################################
+###  Create a formula for machine learning models  ###
+######################################################
 
+# This function allows to create a formula from the columns of a data frame
 # arguments:
-  # data: data frame
-  # position: numéro de colonne de la variable d'intérêt (que l'on souhaite prédire)
+  # data: R data frame
+  # position: number of the column in the data frame that we want to predict
 
 create_formula <- function(data, position = 1)
 {
@@ -60,13 +63,14 @@ create_formula <- function(data, position = 1)
 #create_formula(mtcars)
 
 
-##########################
-###  Proc Freq de SAS  ###
-##########################
+########################
+###  SAS Proc Freq   ###
+########################
 
+# This function permits to reproduce the output of the SAS proc freq
 # arguments:
-  # variable: variable catégorielle sur laquelle on veut faire la proc freq
-  # digits: nombre de chiffres après la virgule pour l'arrondi
+  # variable: vector on which we want to apply the function
+  # digits: integer that specifies the number of decimals we want to keep in the rounded figures
 
 proc_freq <- function(variable, digits = 4)
 {
@@ -97,14 +101,15 @@ proc_freq <- function(variable, digits = 4)
 # dat <- proc_freq(data$Species)
 
 
-#####################################
-###  Effet Lift / Courbe de lift  ###
-#####################################
+#######################################
+###  Lift Effect Curve / Lift Curve ###
+#######################################
 
+# This function allows to draw the lift effect on a graph
 # arguments:
-  # predictions: probabilités prédites par un modèle statistique
-  # true_labels: étiquettes rélles des individus statistiques
-  # positive_label: nom de la modalité correspondant au label positif (Y = 1)
+  # predictions: vector of predicted probabilities 
+  # true_labels: vector of true labels 
+  # positive_label: string for the positive label (Y = 0)
 
 lift_effect <- function(predictions, true_labels, positive_label)
 {
@@ -146,6 +151,12 @@ lift_effect <- function(predictions, true_labels, positive_label)
     
 }
 
+
+# This function allows to draw the lift curve on a graph
+  # arguments:
+    # predictions: vector of predicted probabilities 
+    # true_labels: vector of true labels 
+    # positive_label: string for the positive label (Y = 0)
 
 lift_curve <- function(predictions, true_labels, positive_label)
 {
@@ -192,24 +203,26 @@ lift_curve <- function(predictions, true_labels, positive_label)
 }
 
 
-###############################################
-###  Calcul de la variance intraclasse CAH  ###
-###############################################
+######################################################
+###  Computing of the intragroup variance for AHC  ###
+######################################################
 
+# This function allow to compute the centroid of a data frame
 # arguments:
-  # i: numéro du cluster
-  # data: data frame
+  # i: number of the cluster
+  # data: R data frame
   # cluster: nom de la variable indiquant le cluster
 
-clust.centroid <- function(i, data, cluster)
+clust_centroid <- function(i, data, cluster)
 {
   
-  return(colMeans(data[cluster == i,]))# on obtient les coordonnées pour chaque variable des centroïdes de chaque cluster
+  return(colMeans(data[cluster == i,]))
   
 }
 
+# This function allows to compute the inertia in a R data frame 
 # arguments:
-  # data: data frame (uniquement variables numériques)
+  # data: R data frame (all columns are required to be numeric types)
 
 compute_inertia <- function(data)
 {
@@ -228,14 +241,14 @@ compute_inertia <- function(data)
 
 #compute_inertia(mtcars)
 
-
+# This function allows to compute the intra group inertia from agglomerative clustering for different number of clusters
 # arguments:
-  # data: data frame (uniquement variables numériques)
-  # max_clusters: nombre maximal de clusters pour le quel on fait calcule la variance interclasse
+  # data: R data frame (all columns are required to be numeric types)
+  # max_clusters: maximal number of clusters for which we compute intra group inertia
 
-# Etape 1: Trouver les centroïdes des différents clusters et le centroïde global
-# Etape 2: Calculer les écarts quadratiques des centroïdes au centroïde global
-# Etape 3: Faire la moyenne des écarts quadratiques en prenant en compte le nombre total de clusters et la volumétrie par cluster
+# Step 1: Find clusters centroids and the global centroid
+# Step 2: Compute quadratic differences between cluster centroids and global centroid 
+# Step 3: Compute the weighted average of quadratic differences (weigth = size of the cluster)
 
 compute_inertia_ahc <- function(data, max_clusters = 10)
 {
@@ -251,7 +264,7 @@ compute_inertia_ahc <- function(data, max_clusters = 10)
   
     ahc_clusters <- cutree(tree = model_ahc, k = i)
   
-    centroids <- sapply(unique(ahc_clusters), clust.centroid, data, ahc_clusters)
+    centroids <- sapply(unique(ahc_clusters), clust_centroid, data, ahc_clusters)
   
     centroids <- centroids %>% cbind(rowMeans(centroids))
   
@@ -272,5 +285,5 @@ compute_inertia_ahc <- function(data, max_clusters = 10)
 # 
 # compute_inertia_ahc(data = data)
 
-### RESTE A FAIRE
-# Question de l'évolution de l'inertie qui n'est pas stricte lorsque le nombre de cluster augmente 
+### Questions
+# Is it possible for intra group inertia to decreases sometimes when number of clusters increases ?

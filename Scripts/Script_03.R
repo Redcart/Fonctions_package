@@ -1,38 +1,39 @@
 ###################################################################################################################################################
 #######                                                                                                                                      ######
-#######                                                        Fonctions utiles                                                              ######
-#######                                                     S.CORDE Décembre 2018                                                            ######
+#######                                                       Helpful functions                                                              ######
+#######                                                       for data analysis                                                              ######
+#######                                                     S.CORDE December 2018                                                            ######
 #######                                                                                                                                      ######
 ###################################################################################################################################################
 
+### Functions coded in this script
 
-### Fonctions codées dans ce script
+# - Procedure that allows to fill the gaps in time series in panel data 
 
-# - Procédure pour combler les gaps des séries temporelles au sein d'un panel
-
-  # - Fonction permettant de créer un calendrier vide
-  # - Fonction pour réaliser la répétition en début et fin de série temporelle
-  # - Fonction pour combler les gaps intermédiaires d'une série temporelle
+  # - Function that allows to create an empty calendar
+  # - Function that permits to do repetition values for the start and the end of time series
+  # - Function that permits to fill the intermdediate gaps in time series by linear interpolationb
 
 rm(list = ls())
 
-### Chargement de packages
+### Loading of required R packages
 
 library(ggplot2)
 library(dplyr)
 library(sqldf)
 library(stringr)
 
-###################################################
-###  Fonction pour créer un calendrier complet  ###
-###################################################
+##############################################
+###  Function for complete empty calendar  ###
+##############################################
 
+# This function allows to create a complete empty calendar
 # arguments:
-  # - data: data frame
-  # - key_variable: variable faisant référence à la clé de l'observation (ID, ...)
-  # - time_variable: variable temporelle permettant d'ordonner les observations
-  # - start_year: année de début de la série temporelle
-  # - end_year: année de fin de la série temporelle
+  # - data: R data frame
+  # - key_variable: variable name that refers to the key variable in the panel (ID, ...)
+  # - time_variable: time variable name that permits to sort observation on a time scale
+  # - start_year: starting year of the time serie
+  # - end_year: ending year of the time serie
 
 create_calendar_day <- function(data, key_variable, time_variable, start_year, end_year){
   
@@ -55,17 +56,18 @@ create_calendar_day <- function(data, key_variable, time_variable, start_year, e
 }
 
 
-#####################################################################
-###  Fonction pour combler les débuts et fin de série manquantes  ###
-#####################################################################
+###########################################################
+###  Function for filling start and end of time series  ###
+###########################################################
 
+# this function allows to fill the start and end gaps of time series by doing repetition
 # arguments:
-  # - data: data frame
-  # - calendar: calendrier vide par ID
-  # - gap_variable: variable dont il faut combler les gap
-  # - key_variable: variable faisant référence à la clé de l'observation (ID, ...)
-  # - time_variable: variable temporelle permettant d'ordonner les observations
-  # - digits: nombre de chiffres après la virgule à garder lors de l'arrondi de la valeur interpolée
+  # - data: R data frame
+  # - calendar: complete empty calendar (performed by create_calendar_day)
+  # - gap_variable: name of the variable we want to fill the gaps
+  # - key_variable: variable name that refers to the key variable in the panel (ID, ...)
+  # - time_variable: time variable name that permits to sort observation on a time scale
+  # - digits: number of decimals to keep for the rounding 
 
 end_start_to_fill <- function(data, calendar, gap_variable, key_variable, time_variable, digits = 2){
   
@@ -87,7 +89,7 @@ end_start_to_fill <- function(data, calendar, gap_variable, key_variable, time_v
     left_join(start_end, by = key_variable) %>% 
     arrange(get(key_variable), get(time_variable)) %>% 
     ungroup() %>% 
-    mutate(boo_gap = ifelse(is.na(get(gap_variable)), 1, 0)) %>% # début de période
+    mutate(boo_gap = ifelse(is.na(get(gap_variable)), 1, 0)) %>% # start of the period
     group_by(get(key_variable)) %>% 
     mutate(lag_boo_gap = lag(boo_gap)) %>% 
     mutate(first_gap = ifelse(boo_gap == 1 & (lag_boo_gap == 0 | is.na(lag_boo_gap)), 1, 0)) %>% 
@@ -97,7 +99,7 @@ end_start_to_fill <- function(data, calendar, gap_variable, key_variable, time_v
     ungroup() %>% 
     mutate(values_to_replace = ifelse(boo_start_toreplace == 1 & n_gap == 1, 1, 0)) %>% 
     mutate(gap_variable_corrected = ifelse(values_to_replace == 1, first_gap_variable, get(gap_variable))) %>% 
-    arrange(get(key_variable), desc(get(time_variable))) %>% # fin de période
+    arrange(get(key_variable), desc(get(time_variable))) %>% # end of the period
     mutate(boo_gap = ifelse(is.na(gap_variable_corrected), 1, 0)) %>% 
     group_by(get(key_variable)) %>% 
     mutate(lag_boo_gap = lag(boo_gap)) %>% 
@@ -116,16 +118,16 @@ end_start_to_fill <- function(data, calendar, gap_variable, key_variable, time_v
   
 }
 
-####################################################################################
-####    Fonction pour combler les gaps intermdédiaires d'une série temporelle    ###
-####################################################################################
+#####################################################################
+####    Function for filling intermdediate gaps in a time serie   ###
+#####################################################################
 
 # arguments:
-  # - data: data frame
-  # - gap_variable: variable dont il faut combler les gap
-  # - key_variable: variable faisant référence à la clé de l'observation (ID, ...)
-  # - time_variable: variable temporelle permettant d'ordonner les observations
-  # - digits: nombre de chiffres après la virgule à garderlors de l'arrondi de la valeur interpolée
+  # - data: R data frame
+  # - gap_variable: name of the variable we want to fill the gaps
+  # - key_variable: variable name that refers to the key variable in the panel (ID, ...)
+  # - time_variable: time variable name that permits to sort observation on a time scale
+  # - digits: number of decimals to keep for the rounding 
 
 gap_to_fill <- function(data, gap_variable, key_variable, time_variable, digits = 2){
 
@@ -166,55 +168,52 @@ gap_to_fill <- function(data, gap_variable, key_variable, time_variable, digits 
   
 }
 
-#################################
-####   Tests des fonctions   ####
-#################################
+############################################
+###  Performing example of the function  ###
+############################################
 
-### création d'un jeu de données test
-
-rep(c("Paris", "Madrid", "Berlin"), each = 10)
-
-jeu_donnees <- data.frame("country" = rep(c("France", "Spain", "Germany"), each = 10),
-                          "capital" = rep(c("Paris", "Madrid", "Berlin"), each = 10),
-                          "year" = 2009:2018,
-                          "gdp" = c(NA, NA, 200, 300, 500, 1000, NA, NA, NA, 500, 
-                                      0, NA, NA, NA, NA, NA, NA, 800, 1200, 1500,
-                                      100, 200, 400, 700, 700, 800, 600, 500, NA, NA))
-
-
-jeu_donnees <- na.omit(jeu_donnees)
-
-### vérification
-
-data_to_check_1 <- create_calendar_day(data = jeu_donnees, key_variable = "country", time_variable = "year", start_year = 2009, end_year = 2018)
-  
-data_to_check_2 <- end_start_to_fill(data = jeu_donnees, calendar = data_to_check_1, gap_variable = "gdp", key_variable = "country", time_variable = "year", digits = 2)
-
-data_to_check_3 <- gap_to_fill(data = data_to_check_2, gap_variable = "gdp_corrected_1", key_variable = "country", time_variable = "year", digits = 1)
-
-### OK !!!
-
-
-### RESTE A FAIRE
-# la création d'un calendrier plus complexe
-# gérer le problème de get(key_variable)
-
-colnames(calendrier) = c("annee", "semaine")
-calendrier$id_semaine <- paste0(calendrier$annee, "W", calendrier$semaine, sep = "")
-calendrier <- data.frame(calendrier)
-str(calendrier)
-
-
-calendrier %>% select(annee) %>% distinct() %>% count
-calendrier %>% select(id_semaine) %>% distinct() %>% count
-
-# 2ème étape: faire un cross join entre les pdv et le calendrier 2014-2017
-
-calendrier_pdv_gamme_cst <- sqldf("SELECT * 
-                                  FROM perimetre_1
-                                  CROSS JOIN calendrier")
-
-
-calendrier_pdv_gamme_cst %>% select(`Code PDV`) %>% distinct() %>% count
-calendrier_pdv_gamme_cst %>% select(annee) %>% distinct() %>% count
-calendrier_pdv_gamme_cst %>% select(id_semaine) %>% distinct() %>% count
+# ### creation of a data set
+# 
+# rep(c("Paris", "Madrid", "Berlin"), each = 10)
+# 
+# jeu_donnees <- data.frame("country" = rep(c("France", "Spain", "Germany"), each = 10),
+#                           "capital" = rep(c("Paris", "Madrid", "Berlin"), each = 10),
+#                           "year" = 2009:2018,
+#                           "gdp" = c(NA, NA, 200, 300, 500, 1000, NA, NA, NA, 500, 
+#                                       0, NA, NA, NA, NA, NA, NA, 800, 1200, 1500,
+#                                       100, 200, 400, 700, 700, 800, 600, 500, NA, NA))
+# 
+# 
+# jeu_donnees <- na.omit(jeu_donnees)# we artificially create some gaps in the time series
+# 
+# ### Check
+# 
+# data_to_check_1 <- create_calendar_day(data = jeu_donnees, key_variable = "country", time_variable = "year", start_year = 2009, end_year = 2018)
+#   
+# data_to_check_2 <- end_start_to_fill(data = jeu_donnees, calendar = data_to_check_1, gap_variable = "gdp", key_variable = "country", time_variable = "year", digits = 2)
+# 
+# data_to_check_3 <- gap_to_fill(data = data_to_check_2, gap_variable = "gdp_corrected_1", key_variable = "country", time_variable = "year", digits = 1)
+# 
+# ### OK !!!
+# 
+# 
+# ### TO DO
+# # creation of empty calendar more complex
+# 
+# colnames(calendrier) = c("annee", "semaine")
+# calendrier$id_semaine <- paste0(calendrier$annee, "W", calendrier$semaine, sep = "")
+# calendrier <- data.frame(calendrier)
+# str(calendrier)
+# 
+# 
+# calendrier %>% select(annee) %>% distinct() %>% count
+# calendrier %>% select(id_semaine) %>% distinct() %>% count
+# 
+# calendrier_pdv_gamme_cst <- sqldf("SELECT * 
+#                                   FROM perimetre_1
+#                                   CROSS JOIN calendrier")
+# 
+# 
+# calendrier_pdv_gamme_cst %>% select(`Code PDV`) %>% distinct() %>% count
+# calendrier_pdv_gamme_cst %>% select(annee) %>% distinct() %>% count
+# calendrier_pdv_gamme_cst %>% select(id_semaine) %>% distinct() %>% count
